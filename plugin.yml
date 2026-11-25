@@ -1,0 +1,16 @@
+name: ShoxPlugin
+version: 1.0
+main: uz.shox.ShoxPlugin
+api-version: '1.21'
+description: Har 2 soatda poyezd bilan Asr dunyosiga missiya eventi
+commands:
+  shox:
+    description: ShoxPlugin boshqaruvi
+    usage: /shox <start|stop|setstation>
+    permission: shox.admin
+permissions:
+  shox.admin:
+    default: op
+  shox.bypass:
+    description: Asr dunyosida buyruqlar/blok cheklovlarini chetlab o'tish
+    default: false

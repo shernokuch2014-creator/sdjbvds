@@ -1,0 +1,11 @@
+# Event har necha daqiqada boshlanadi (120 = 2 soat)
+interval-minutes: 120
+# Poyezd necha daqiqadan keyin yuradi
+departure-minutes: 3
+# Poyezd chiqadigan joy (tog' tunnelining og'zi). /shox setstation bilan o'rnating.
+# Poyezd +X yo'nalishida yuradi, tunnel -X tomonda bo'lishi kerak.
+station:
+  world: world
+  x: 0.5
+  y: 64.0
+  z: 0.5
