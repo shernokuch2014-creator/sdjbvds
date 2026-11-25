@@ -140,9 +140,49 @@ public class ShoxPlugin extends JavaPlugin implements Listener {
                 carveTunnel(l);
                 sender.sendMessage("§aTunnel qazildi (g'arb tomonga 49 blok) va stansiya o'rnatildi.");
             }
-            default -> sender.sendMessage("§e/shox <start|stop|setstation|maketunnel>");
+            case "makemountain" -> {
+                if (!(sender instanceof Player p)) { sender.sendMessage("Faqat o'yinchi."); return true; }
+                Location l = p.getLocation().getBlock().getLocation().add(0.5, 0, 0.5);
+                getConfig().set("station.world", l.getWorld().getName());
+                getConfig().set("station.x", l.getX());
+                getConfig().set("station.y", l.getY());
+                getConfig().set("station.z", l.getZ());
+                saveConfig();
+                buildMountain(l);
+                sender.sendMessage("§aTog' va tunnel qurildi! Tog' sizdan g'arb (-X) tomonda. /shox start bilan sinang.");
+            }
+            default -> sender.sendMessage("§e/shox <start|stop|setstation|maketunnel|makemountain>");
         }
         return true;
+    }
+
+    /** Turgan joyingizdan g'arbga katta tog' quradi va ichiga tunnel qazadi. */
+    void buildMountain(Location st) {
+        World w = st.getWorld();
+        int sx = st.getBlockX(), sy = st.getBlockY(), sz = st.getBlockZ();
+        int cx = sx - 30;
+        double rx = 34, rz = 20, ry = 20;
+        Random r = new Random(7);
+        for (int x = cx - 34; x <= cx + 34; x++) {
+            for (int z = sz - 20; z <= sz + 20; z++) {
+                double nx = (x - cx) / rx, nz = (z - sz) / rz;
+                double base = 1 - nx * nx - nz * nz;
+                if (base <= 0) continue;
+                int h = (int) Math.floor(ry * Math.sqrt(base)) + r.nextInt(2);
+                for (int y = sy - 1; y <= sy - 1 + h; y++) {
+                    Material m;
+                    if (y == sy - 1 + h) m = (y > sy + 14) ? Material.SNOW_BLOCK : Material.GRASS_BLOCK;
+                    else if (y >= sy - 1 + h - 2) m = Material.DIRT;
+                    else m = r.nextInt(6) == 0 ? Material.ANDESITE : Material.STONE;
+                    w.getBlockAt(x, y, z).setType(m, false);
+                }
+            }
+        }
+        carveTunnel(st);
+        // tunnel og'zi oldidagi tosh/tuproqni tozalash
+        for (int x = sx + 1; x <= sx + 6; x++)
+            for (int z = sz - 4; z <= sz + 4; z++)
+                for (int y = sy; y <= sy + 7; y++) w.getBlockAt(x, y, z).setType(Material.AIR, false);
     }
 
     /** Turgan joyingizdan g'arbga (-X) qarab togni teshib, relsli tunnel qazadi. */
