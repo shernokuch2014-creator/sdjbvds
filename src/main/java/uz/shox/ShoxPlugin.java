@@ -229,7 +229,7 @@ public class ShoxPlugin extends JavaPlugin implements Listener {
                 .generateStructures(false)
                 .createWorld();
         w.setGameRule(GameRule.DO_MOB_SPAWNING, false);
-        w.setGameRule(GameRule.DO_DAYNIGHT_CYCLE, false);
+        w.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, false);
         w.setTime(6000);
         w.setDifficulty(Difficulty.NORMAL);
         w.setSpawnLocation(2, 65, 12);
