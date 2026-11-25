@@ -2,8 +2,10 @@ package uz.shox;
 
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.block.Block;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
+import org.bukkit.block.data.Rail;
 import org.bukkit.boss.BossBar;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -127,9 +129,48 @@ public class ShoxPlugin extends JavaPlugin implements Listener {
                 saveConfig();
                 sender.sendMessage("§aStansiya o'rnatildi. Poyezd shu yerga +X tomonga chiqadi.");
             }
-            default -> sender.sendMessage("§e/shox <start|stop|setstation>");
+            case "maketunnel" -> {
+                if (!(sender instanceof Player p)) { sender.sendMessage("Faqat o'yinchi."); return true; }
+                Location l = p.getLocation().getBlock().getLocation().add(0.5, 0, 0.5);
+                getConfig().set("station.world", l.getWorld().getName());
+                getConfig().set("station.x", l.getX());
+                getConfig().set("station.y", l.getY());
+                getConfig().set("station.z", l.getZ());
+                saveConfig();
+                carveTunnel(l);
+                sender.sendMessage("§aTunnel qazildi (g'arb tomonga 49 blok) va stansiya o'rnatildi.");
+            }
+            default -> sender.sendMessage("§e/shox <start|stop|setstation|maketunnel>");
         }
         return true;
+    }
+
+    /** Turgan joyingizdan g'arbga (-X) qarab togni teshib, relsli tunnel qazadi. */
+    void carveTunnel(Location st) {
+        World w = st.getWorld();
+        int sx = st.getBlockX(), sy = st.getBlockY(), sz = st.getBlockZ();
+        Rail rail = (Rail) Material.RAIL.createBlockData();
+        rail.setShape(Rail.Shape.EAST_WEST);
+        for (int x = sx - 49; x <= sx; x++) {
+            for (int z = sz - 4; z <= sz + 4; z++) {
+                for (int y = sy - 1; y <= sy + 6; y++) {
+                    boolean edge = z == sz - 4 || z == sz + 4 || y == sy - 1 || y == sy + 6;
+                    boolean end = x == sx - 49;
+                    Block b = w.getBlockAt(x, y, z);
+                    if (end || (edge && x < sx)) {
+                        boolean lamp = y == sy + 6 && x % 6 == 0 && z == sz;
+                        b.setType(lamp ? Material.SEA_LANTERN : (y == sy - 1 ? Material.POLISHED_ANDESITE : Material.STONE_BRICKS), false);
+                    } else if (edge) {
+                        // kirish og'zi: faqat yon ustunlar va tepa ramka
+                        if (y != sy - 1) b.setType(Material.STONE_BRICKS, false);
+                        else b.setType(Material.POLISHED_ANDESITE, false);
+                    } else {
+                        b.setType(Material.AIR, false);
+                    }
+                }
+                if (z == sz && x < sx) w.getBlockAt(x, sy, z).setBlockData(rail, false);
+            }
+        }
     }
 
     Location loadStation() {
@@ -631,7 +672,6 @@ public class ShoxPlugin extends JavaPlugin implements Listener {
     }
 
     void cleanupOldWorlds() {
-        File_loop:
         try (Stream<Path> st = Files.list(Bukkit.getWorldContainer().toPath())) {
             st.filter(pa -> pa.getFileName().toString().startsWith("shox_asr_")).forEach(this::deleteFolder);
         } catch (IOException ignored) { }
